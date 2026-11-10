@@ -52,31 +52,31 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let old={};try{old=JSON.parse(localStorage.getItem('dayeriSave')||'{}')||{}}catch(e){localStorage.removeItem('dayeriSave')}
-const save={cash:Number.isFinite(old.cash)?Math.max(0,old.cash):1800,owned:Array.isArray(old.owned)&&old.owned.some(i=>Number.isInteger(i)&&i>=0&&i<23)?old.owned.filter(i=>Number.isInteger(i)&&i>=0&&i<23):[0,2],selected:Number.isInteger(old.selected)&&old.selected>=0&&old.selected<23?old.selected:0,upgrades:old.upgrades&&typeof old.upgrades==='object'?old.upgrades:{},best:Number.isFinite(old.best)?old.best:0,level:Number.isFinite(old.level)?old.level:1,timeStage:Number.isInteger(old.timeStage)?Math.max(1,Math.min(50,old.timeStage)):1,lastDaily:typeof old.lastDaily==='string'?old.lastDaily:''};
+const save={cash:Number.isFinite(old.cash)?Math.max(0,old.cash):1800,owned:Array.from({length:23},(_,i)=>i),selected:Number.isInteger(old.selected)&&old.selected>=0&&old.selected<23?old.selected:0,upgrades:old.upgrades&&typeof old.upgrades==='object'?old.upgrades:{},best:Number.isFinite(old.best)?old.best:0,level:Number.isFinite(old.level)?old.level:1,timeStage:Number.isInteger(old.timeStage)?Math.max(1,Math.min(50,old.timeStage)):1,lastDaily:typeof old.lastDaily==='string'?old.lastDaily:''};
 const cars=[
 {name:'صني',emoji:'🚙',type:'car',price:0,max:175,acc:1,handling:1,armor:1,width:1.45,color:0xe5e4df},
-{name:'تاكسي',emoji:'🚕',type:'taxi',price:2400,max:165,acc:.95,handling:.92,armor:1.2,width:1.5,color:0xd5b52e},
+{name:'تاكسي',emoji:'🚕',type:'taxi',price:0,max:165,acc:.95,handling:.92,armor:1.2,width:1.5,color:0xd5b52e},
 {name:'ميكروباص',emoji:'🚐',type:'van',price:0,max:145,acc:.8,handling:.75,armor:1.8,width:1.65,color:0xeeeeea},
-{name:'توكتوك',emoji:'🛺',type:'tuk',price:5000,max:110,acc:1.2,handling:1.55,armor:.55,width:1.15,color:0x258b54},
-{name:'تروسيكل',emoji:'🛻',type:'truck',price:5500,max:105,acc:.8,handling:.8,armor:1.3,width:1.6,color:0xb77b37},
-{name:'موتوسيكل',emoji:'🏍️',type:'bike',price:12000,max:230,acc:1.45,handling:1.5,armor:.45,width:.75,color:0x27384b},
-{name:'فيرنا',emoji:'🚗',type:'car',price:6800,max:180,acc:1.08,handling:1.05,armor:.9,width:1.45,color:0x9babb7},
-{name:'لانسر بومة',emoji:'🚘',type:'car',price:9200,max:195,acc:1.16,handling:1.08,armor:1.05,width:1.5,color:0x252a31},
-{name:'بيجو',emoji:'🚙',type:'van',price:11000,max:150,acc:.9,handling:.88,armor:1.65,width:1.65,color:0x9b9b91},
-{name:'لاند كروزر',emoji:'🚙',type:'suv',price:26000,max:205,acc:1.2,handling:.94,armor:2.2,width:1.8,color:0xe1dfd1},
-{name:'باترول',emoji:'🚙',type:'suv',price:32000,max:215,acc:1.25,handling:.9,armor:2.4,width:1.85,color:0x252b2b},
-{name:'تريلا',emoji:'🚛',type:'truck',price:18000,max:120,acc:.7,handling:.62,armor:3,width:1.9,color:0x9a3b2e},
-{name:'BYD',emoji:'🚘',type:'car',shape:'sedan',price:7000,max:185,acc:1.08,handling:1.04,armor:1,width:1.5,color:0x9ba6ad},
-{name:'كورولا',emoji:'🚗',type:'car',shape:'sedan',price:8000,max:188,acc:1.05,handling:1.1,armor:1.08,width:1.5,color:0xeeeeea},
-{name:'سبورتاج',emoji:'🚙',type:'suv',shape:'suv',price:12000,max:195,acc:1.12,handling:1.02,armor:1.8,width:1.82,color:0x343b40},
-{name:'إيبيزا',emoji:'🚗',type:'car',shape:'hatch',price:15000,max:198,acc:1.2,handling:1.28,armor:.95,width:1.42,color:0xb42e36},
-{name:'أكورد',emoji:'🚘',type:'car',shape:'luxury',price:7500,max:190,acc:1.1,handling:1.03,armor:1.15,width:1.56,color:0x262e38},
-{name:'إم جي',emoji:'🚗',type:'car',shape:'sport',price:8500,max:192,acc:1.14,handling:1.12,armor:1.05,width:1.52,color:0x8d2732},
-{name:'بنز',emoji:'🚙',type:'suv',shape:'luxury',price:60000,max:220,acc:1.18,handling:.98,armor:2,width:1.82,color:0x20252a},
-{name:'بي إم',emoji:'🚘',type:'car',shape:'sport',price:75000,max:235,acc:1.32,handling:1.2,armor:1.2,width:1.56,color:0x202a39},
-{name:'لامبو',emoji:'🏎️',type:'car',shape:'super',price:150000,max:285,acc:1.55,handling:1.35,armor:1.1,width:1.62,color:0xe2b52b},
-{name:'تاكسي لادا',emoji:'🚕',type:'taxi',shape:'classicTaxi',price:25000,max:155,acc:.86,handling:.82,armor:1.45,width:1.52,color:0xe6dfc8},
-{name:'تاكسي إلنترا',emoji:'🚕',type:'taxi',shape:'modernTaxi',price:28000,max:185,acc:1.1,handling:1.08,armor:1.05,width:1.54,color:0xe4c32c}
+{name:'توكتوك',emoji:'🛺',type:'tuk',price:0,max:110,acc:1.2,handling:1.55,armor:.55,width:1.15,color:0x258b54},
+{name:'تروسيكل',emoji:'🛻',type:'truck',price:0,max:105,acc:.8,handling:.8,armor:1.3,width:1.6,color:0xb77b37},
+{name:'موتوسيكل',emoji:'🏍️',type:'bike',price:0,max:230,acc:1.45,handling:1.5,armor:.45,width:.75,color:0x27384b},
+{name:'فيرنا',emoji:'🚗',type:'car',price:0,max:180,acc:1.08,handling:1.05,armor:.9,width:1.45,color:0x9babb7},
+{name:'لانسر بومة',emoji:'🚘',type:'car',price:0,max:195,acc:1.16,handling:1.08,armor:1.05,width:1.5,color:0x252a31},
+{name:'بيجو',emoji:'🚙',type:'van',price:0,max:150,acc:.9,handling:.88,armor:1.65,width:1.65,color:0x9b9b91},
+{name:'لاند كروزر',emoji:'🚙',type:'suv',price:0,max:205,acc:1.2,handling:.94,armor:2.2,width:1.8,color:0xe1dfd1},
+{name:'باترول',emoji:'🚙',type:'suv',price:0,max:215,acc:1.25,handling:.9,armor:2.4,width:1.85,color:0x252b2b},
+{name:'تريلا',emoji:'🚛',type:'truck',price:0,max:120,acc:.7,handling:.62,armor:3,width:1.9,color:0x9a3b2e},
+{name:'BYD',emoji:'🚘',type:'car',shape:'sedan',price:0,max:185,acc:1.08,handling:1.04,armor:1,width:1.5,color:0x9ba6ad},
+{name:'كورولا',emoji:'🚗',type:'car',shape:'sedan',price:0,max:188,acc:1.05,handling:1.1,armor:1.08,width:1.5,color:0xeeeeea},
+{name:'سبورتاج',emoji:'🚙',type:'suv',shape:'suv',price:0,max:195,acc:1.12,handling:1.02,armor:1.8,width:1.82,color:0x343b40},
+{name:'إيبيزا',emoji:'🚗',type:'car',shape:'hatch',price:0,max:198,acc:1.2,handling:1.28,armor:.95,width:1.42,color:0xb42e36},
+{name:'أكورد',emoji:'🚘',type:'car',shape:'luxury',price:0,max:190,acc:1.1,handling:1.03,armor:1.15,width:1.56,color:0x262e38},
+{name:'إم جي',emoji:'🚗',type:'car',shape:'sport',price:0,max:192,acc:1.14,handling:1.12,armor:1.05,width:1.52,color:0x8d2732},
+{name:'بنز',emoji:'🚙',type:'suv',shape:'luxury',price:0,max:220,acc:1.18,handling:.98,armor:2,width:1.82,color:0x20252a},
+{name:'بي إم',emoji:'🚘',type:'car',shape:'sport',price:0,max:235,acc:1.32,handling:1.2,armor:1.2,width:1.56,color:0x202a39},
+{name:'لامبو',emoji:'🏎️',type:'car',shape:'super',price:0,max:285,acc:1.55,handling:1.35,armor:1.1,width:1.62,color:0xe2b52b},
+{name:'تاكسي لادا',emoji:'🚕',type:'taxi',shape:'classicTaxi',price:0,max:155,acc:.86,handling:.82,armor:1.45,width:1.52,color:0xe6dfc8},
+{name:'تاكسي إلنترا',emoji:'🚕',type:'taxi',shape:'modernTaxi',price:0,max:185,acc:1.1,handling:1.08,armor:1.05,width:1.54,color:0xe4c32c}
 ];
 const roads={ring:{name:'الطريق الدائري',limit:90,finish:5.5,stops:[['manib','المنيب',5.5],['maadi','المعادي',12],['qatamiya','القطامية',19],['salam','السلام',27],['marj','المرج',35],['maryoutiya','المريوطية',44],['warraq','الوراق',53],['full','لفة كاملة',89]]},ism:{name:'مصر–الإسماعيلية',limit:120,finish:6.5,stops:[['obour','العبور',6.5],['sherouk','الشروق',13],['badr','بدر',20],['ismailia','اتجاه الإسماعيلية',30]]},shobra:{name:'شبرا–بنها الحر',limit:120,finish:4,stops:[['shobra','شبرا',4],['qalyub','قليوب',9],['qanater','القناطر',15],['banha','بنها',22]]},middle:{name:'الدائري الأوسطي',limit:120,finish:7,stops:[['fifth','التجمع',7],['ain','العين السخنة',15],['capital','العاصمة الإدارية',24],['helwan','حلوان',33]]}};
 let mode='shift',carId=0,roadId='ring',directionId='cw',timeId='day',trafficLevel=1,cameraMode='normal',selectedExitId='manib',routeGoal=5.5,state=null,input={};
