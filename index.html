@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 <div id="hud"><div class="top"><div class="hudbox"><div style="font-weight:900">ع الدائري</div><div class="hudlabel" id="roadName">الطريق الدائري</div></div><div class="hudrow"><div class="hudbox"><div class="hudlabel">السرعة</div><div class="hudval"><span id="speed">0</span><small> كم/س</small></div></div><div class="hudbox"><div class="hudlabel">المسافة</div><div class="hudval"><span id="distance">0.0</span><small> كم</small></div></div><div class="hudbox"><div class="hudlabel">الفكة</div><div class="hudval" id="cashHud">0</div></div></div></div><div class="mission"><b id="missionTitle">مهام المشوار</b><small id="missionText">عدّي عربيات · اعمل غرز · خليك فابريكا</small><small id="timerText" style="display:block;color:#f0c36b;font-size:10px;margin-top:4px">الوقت 00:00</small><div class="route-progress"><div><small id="routeLabel">باقي للمخرج</small><b id="routePercent">0%</b></div><div class="meter"><i id="routeBar"></i></div></div><div class="hud-map"><div class="hud-map-head"><b>🗺️ الرادار</b><small id="nextExit">المخرج التالي</small></div><svg viewBox="0 0 240 72" role="img" aria-label="رادار الطريق وموقع السيارة"><ellipse class="hud-map-track" cx="120" cy="36" rx="95" ry="25"/><ellipse class="hud-map-inner" cx="120" cy="36" rx="95" ry="25"/><g id="miniStops"></g><circle class="hud-map-player" id="miniPlayer" cx="120" cy="11" r="5"/></svg><small class="hud-map-foot" id="miniDestination">الوجهة</small></div><div class="meter" style="margin-top:7px"><i id="healthBar"></i></div><small id="healthText">حالة العربية: فابريكا</small><div class="meter" style="margin-top:6px"><i id="nitroBar"></i></div><small>نيتروس ⚡</small></div><button class="ctrl small hudbutton" id="pauseBtn">Ⅱ</button><div class="bottom"><div class="controls"><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button></div><div class="midcontrols"><button class="ctrl small" id="horn">📣</button><button class="ctrl small" id="nitro">⚡</button><button class="ctrl small" id="signal">↔</button></div><div class="rightcontrols"><button class="ctrl" id="brake">▼</button><button class="ctrl" id="gas">▲</button></div></div><div id="cockpitOverlay" class="cockpit-overlay hidden"><div class="rear-mirror"><span></span></div><div class="dash-panel"><div class="dash-brand">DAYERI <small>EGYPT</small></div><div class="dash-screen"><b id="dashSpeed">0</b><small>KM/H</small></div><div class="dash-wheel">◉</div><div class="dash-lights">◀　●　▶</div></div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script><script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let old={};try{old=JSON.parse(localStorage.getItem('dayeriSave')||'{}')||{}}catch(e){localStorage.removeItem('dayeriSave')}
 const save={cash:Number.isFinite(old.cash)?Math.max(0,old.cash):1800,owned:Array.from({length:23},(_,i)=>i),selected:Number.isInteger(old.selected)&&old.selected>=0&&old.selected<23?old.selected:0,upgrades:old.upgrades&&typeof old.upgrades==='object'?old.upgrades:{},best:Number.isFinite(old.best)?old.best:0,level:Number.isFinite(old.level)?old.level:1,timeStage:Number.isInteger(old.timeStage)?Math.max(1,Math.min(50,old.timeStage)):1,lastDaily:typeof old.lastDaily==='string'?old.lastDaily:''};
@@ -160,7 +160,7 @@ const cars=[
 {name:'تاكسي',emoji:'🚕',type:'taxi',price:0,max:165,acc:.95,handling:.92,armor:1.2,width:1.5,color:0xd5b52e},
 {name:'ميكروباص',emoji:'🚐',type:'van',price:0,max:145,acc:.8,handling:.75,armor:1.8,width:1.65,color:0xeeeeea},
 {name:'توكتوك',emoji:'🛺',type:'tuk',price:0,max:110,acc:1.2,handling:1.55,armor:.55,width:1.15,color:0x258b54},
-{name:'تروسيكل',emoji:'🛻',type:'truck',price:0,max:105,acc:.8,handling:.8,armor:1.3,width:1.6,color:0xb77b37},
+{name:'تروسيكل',emoji:'🛻',type:'trike',price:0,max:105,acc:.8,handling:.8,armor:1.3,width:1.6,color:0xb77b37},
 {name:'موتوسيكل',emoji:'🏍️',type:'bike',price:0,max:230,acc:1.45,handling:1.5,armor:.45,width:.75,color:0x27384b},
 {name:'فيرنا',emoji:'🚗',type:'car',price:0,max:180,acc:1.08,handling:1.05,armor:.9,width:1.45,color:0x9babb7},
 {name:'لانسر بومة',emoji:'🚘',type:'car',price:0,max:195,acc:1.16,handling:1.08,armor:1.05,width:1.5,color:0x252a31},
@@ -192,8 +192,8 @@ const root=$('#game'),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;root.appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xdceeff,0x635a4a,1.9));const sun=new THREE.DirectionalLight(0xffe6c4,2.5);sun.position.set(-8,18,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
 const mat=(c,r=.8,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m}),roadMat=mat(0x303438),stripeMat=mat(0xe8e1cf),soilMat=mat(0x998b70),wallMat=mat(0xc9c0ae),rubber=mat(0x151719),glass=new THREE.MeshStandardMaterial({color:0x294957,roughness:.2,metalness:.18});
-const roadCurveX=z=>7*Math.sin((z-5)*Math.PI*2/430);
-const roadHeight=z=>1.6*(Math.cos((z-5)*Math.PI*2/430)-1);
+const roadCurveX=z=>2.6*Math.sin((z-5)*Math.PI*2/430);
+const roadHeight=z=>.08*(Math.cos((z-5)*Math.PI*2/430)-1);
 const roadSlope=z=>roadHeight(z+.5)-roadHeight(z-.5);
 const roadSurfaceSegments=[];
 function makeRoadSurface(width,material,offset=0){
@@ -207,7 +207,7 @@ function updateRoadSurface(mesh){
  geo.computeVertexNormals();
 }
 makeRoadSurface(18,roadMat);
-const soil=new THREE.Mesh(new THREE.PlaneGeometry(500,500),soilMat);soil.rotation.x=-Math.PI/2;soil.position.set(0,-.22,-120);scene.add(soil);
+const soil=new THREE.Mesh(new THREE.PlaneGeometry(500,500),soilMat);soil.rotation.x=-Math.PI/2;soil.position.set(0,-.24,-120);scene.add(soil);
 const marks=[],traffic=[],pickups=[],roadDetailProps=[];
 const shoulderMat=mat(0x454747,.98),edgeLineMat=mat(0xe9e4d5,.72),jointMat=mat(0x202426,.98),reflectorMat=mat(0xd9bd73,.42,.18),guardMat=mat(0x858b88,.72,.48),guardDark=mat(0x454b4a,.85);
 for(const side of [-1,1]){
@@ -347,68 +347,7 @@ for(let i=0;i<12;i++){const side=i%2?1:-1;makePalm(side*(10.5+Math.random()*3),-
 for(let i=0;i<10;i++){const side=i%2?1:-1;makeBlock(side*(19+Math.random()*9),-i*43-35,7+Math.random()*5,10+Math.random()*19,7,[0xb5a58e,0x9a978e,0xc4b9a6,0x898b86][i%4])}
 makeBillboard(10.5,-65,'القاهرة الجديدة','خليك في حارتك');makeBillboard(-10.5,-225,'المنيب · المعادي','مخرج بعد 500 متر');makeFlyover(-155);makeFuelStop(-16,-310);makeExit(-1,-78,'المنيب');makeExit(1,-172,'المعادي');makeExit(-1,-266,'القطامية');makeExit(1,-360,'السلام');makeTollPlaza(-335);
 
-const carModelLoader=new GLTFLoader();
-const readyCarModels=Object.create(null),carModelPromises=Object.create(null);
-const carModelUrls={
- sedan:'https://grab3d.com/dl/1990s-sedan/1990s-sedan.glb',
- hatch:'https://grab3d.com/dl/1990s-hatchback/1990s-hatchback.glb',
- suv:'https://grab3d.com/dl/1990s-off-roader/1990s-off-roader.glb',
- taxi:'https://grab3d.com/dl/1990s-taxi/1990s-taxi.glb',
- minivan:'https://grab3d.com/dl/1990s-minivan/1990s-minivan.glb',
- super:'https://files.innerscene.com/library/generic-mid-engine-supercar-73f252c5/b41b620d8a8890b1b70a/generic-mid-engine-supercar.glb'
-};
-function carModelKey(id){
- const c=cars[id],shape=c.shape||'';
- if(c.type==='taxi'||shape==='classicTaxi'||shape==='modernTaxi')return 'taxi';
- if(c.type==='suv')return 'suv';
- if(c.type==='van')return 'minivan';
- if(shape==='hatch')return 'hatch';
- if(shape==='super'||shape==='sport')return 'super';
- if(c.type==='car')return 'sedan';
- return null;
-}
-function prepareCarModel(key){
- if(readyCarModels[key])return Promise.resolve(readyCarModels[key]);
- if(!carModelPromises[key])carModelPromises[key]=new Promise(resolve=>{
-  carModelLoader.load(carModelUrls[key],gltf=>{readyCarModels[key]=gltf.scene;resolve(gltf.scene)},undefined,()=>resolve(null));
- });
- return carModelPromises[key];
-}
-
-function mountCarModel(group,id,colorOverride){
- const key=carModelKey(id);if(!key||group.userData.assetApplied)return;
- const ready=readyCarModels[key];
- if(!ready){
-  if(group.userData.assetWaitKey===key)return;
-  group.userData.assetWaitKey=key;
-  prepareCarModel(key).then(model=>{if(model&&group.parent&&!group.userData.assetApplied)mountCarModel(group,id,colorOverride)});
-  return;
- }
- const model=ready.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
- if(!size.x||!size.z)return;
- const targetDepth=key==='suv'?3.75:key==='super'?3.45:key==='minivan'?3.55:key==='hatch'?3.15:3.35;
- const targetWidth=key==='suv'?1.9:key==='super'?1.72:key==='minivan'?1.78:1.68;
- const scale=Math.min(targetDepth/size.z,targetWidth/size.x);
- model.scale.setScalar(scale);
- model.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
- model.traverse(o=>{
-  if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;
-  if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else if(o.material)o.material=o.material.clone();
-  const mats=Array.isArray(o.material)?o.material:[o.material];
-  if(colorOverride!==undefined&&colorOverride!==null&&/(body|paint|shell|coach|exterior|carbody)/i.test(o.name+' '+mats.map(m=>m.name||'').join(' ')))mats.forEach(m=>{if(m.color)m.color.setHex(colorOverride)});
- });
- while(group.children.length)group.remove(group.children[0]);
- group.add(model);
- const w=size.x*scale,d=size.z*scale,y=Math.max(.48,size.y*scale*.48);
- const red=mat(0xc51f19,.3),amber=mat(0xff9a22,.3),lamp=mat(0xffe9b6,.25);
- group.userData.brakeLights=[];group.userData.indicators={left:[],right:[]};
- for(const x of [-w*.34,w*.34]){
-  const rear=new THREE.Mesh(new THREE.BoxGeometry(.22,.11,.045),red);rear.position.set(x,y,d*.49);group.add(rear);group.userData.brakeLights.push(rear);
-  const front=new THREE.Mesh(new THREE.BoxGeometry(.2,.09,.04),lamp);front.position.set(x,y,-d*.49);group.add(front);
-  for(const side of ['left','right']){const turn=new THREE.Mesh(new THREE.BoxGeometry(.075,.07,.04),amber);turn.position.set(side==='left'?-w*.49:w*.49,y,d*.43);group.add(turn);group.userData.indicators[side].push(turn)}
- }
- group.userData.assetApplied=true;group.userData.assetKey=key;
-}
+function mountCarModel(group){return group}
 
 function vehicle(id,colorOverride){
  const c=cars[id],g=new THREE.Group(),brakeLights=[],indicators={left:[],right:[]},color=colorOverride??c.color,type=c.type,paint=mat(color,.38,.24),black=mat(0x171b1d,.8),chrome=mat(0x92999a,.32,.72),lamp=mat(0xfff0c8,.22,.15),tail=mat(0xc51f19,.3);
@@ -420,23 +359,24 @@ function vehicle(id,colorOverride){
   for(const z of [-.68,.68]){const wh=new THREE.Mesh(new THREE.TorusGeometry(.34,.105,9,18),black);wh.rotation.y=Math.PI/2;wh.position.set(0,.38,z);g.add(wh);const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.13,12),chrome);hub.rotation.z=Math.PI/2;hub.position.set(0,.38,z);g.add(hub)}
   const bar=new THREE.Mesh(new THREE.BoxGeometry(.9,.08,.09),chrome);bar.position.set(0,1.42,-.63);g.add(bar);
  }else{
-  const tuk=type==='tuk',van=type==='van',truck=type==='truck',suv=type==='suv',shape=c.shape||'standard',wide=tuk?1.08:van?1.72:truck?1.9:suv?1.82:shape==='super'?1.62:shape==='hatch'?1.42:1.55,long=van?3.75:truck?4.5:tuk?2.25:suv?3.75:shape==='super'?3.35:shape==='hatch'?2.55:shape==='luxury'?3.45:3.05,h=van?1.05:tuk?.82:suv?.92:shape==='super'?.58:shape==='hatch'?.68:.72;
-  const lowerGeo=new THREE.SphereGeometry(1,28,18);const lower=new THREE.Mesh(lowerGeo,paint);lower.scale.set(wide*.53,h*.72,long*.53);lower.position.y=h/2+.30;lower.castShadow=true;g.add(lower);
-  const hood=new THREE.Mesh(new THREE.SphereGeometry(1,24,14),paint);hood.scale.set(wide*.49,.16,long*.22);hood.position.set(0,h+.31,-long*.34);g.add(hood);
+  const tuk=type==='tuk',trike=type==='trike',van=type==='van',truck=type==='truck',trailer=truck&&id===11,suv=type==='suv',shape=c.shape||'standard',wide=tuk?1.08:trike?1.55:van?1.72:trailer?2.35:truck?1.9:suv?1.82:shape==='super'?1.62:shape==='hatch'?1.42:1.55,long=van?3.75:trike?2.85:trailer?7.4:truck?4.5:tuk?2.25:suv?3.75:shape==='super'?3.35:shape==='hatch'?2.55:shape==='luxury'?3.45:3.05,h=van?1.05:tuk?.82:trike?.78:trailer?2.35:suv?.92:shape==='super'?.58:shape==='hatch'?.68:.72;
+  const lowerGeo=new RoundedBoxGeometry(wide,h,long,5,Math.min(.16,h*.22));const lower=new THREE.Mesh(lowerGeo,paint);lower.position.y=h/2+.30;lower.castShadow=true;lower.receiveShadow=true;g.add(lower);
+  const hood=new THREE.Mesh(new RoundedBoxGeometry(wide*.96,.28,long*.32,4,.075),paint);hood.position.set(0,h+.30,-long*.34);hood.castShadow=true;g.add(hood);
   const cabW=wide*.88,cabH=van?1.02:tuk?.8:suv?1.08:shape==='super'?.56:shape==='hatch'?.69:shape==='luxury'?.78:.72,cabL=van?1.65:tuk?1.15:suv?1.75:shape==='hatch'?1.18:shape==='super'?1.32:1.42;
-  const cab=new THREE.Mesh(new THREE.SphereGeometry(1,28,18),paint);cab.scale.set(cabW*.53,cabH*.68,cabL*.58);cab.position.set(0,h+.61,-.04);cab.castShadow=true;g.add(cab);
+  const cab=new THREE.Mesh(new RoundedBoxGeometry(cabW,cabH,cabL,5,Math.min(.14,cabH*.18)),paint);cab.position.set(0,h+cabH*.52,-.04);cab.castShadow=true;cab.receiveShadow=true;g.add(cab);
   const windshield=new THREE.Mesh(new THREE.BoxGeometry(cabW*.88,cabH*.64,.035),glass);windshield.position.set(0,h+.65,-cabL*.5-.02);g.add(windshield);
   const rearGlass=new THREE.Mesh(new THREE.BoxGeometry(cabW*.82,cabH*.48,.035),glass);rearGlass.position.set(0,h+.64,cabL*.5+.02);g.add(rearGlass);
   for(const side of [-1,1]){
    const sideGlass=new THREE.Mesh(new THREE.BoxGeometry(.035,cabH*.53,cabL*.65),glass);sideGlass.position.set(side*(cabW*.5+.008),h+.65,-.04);g.add(sideGlass);
    const mirror=new THREE.Mesh(new THREE.BoxGeometry(.18,.12,.24),black);mirror.position.set(side*(wide*.55),h+.75,-.52);g.add(mirror);
   }
-  if(van||suv||shape==='luxury'||shape==='sport'||shape==='super'){const roof=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),paint);roof.scale.set(wide*.43,.09,long*.29);roof.position.set(0,h+cabH*.98,.02);g.add(roof)}
+  if(van||suv||shape==='luxury'||shape==='sport'||shape==='super'){const roof=new THREE.Mesh(new RoundedBoxGeometry(cabW*.92,.10,cabL*.82,4,.045),paint);roof.position.set(0,h+cabH*.99,.02);g.add(roof)}
   if(shape==='hatch'){const rear=new THREE.Mesh(new THREE.BoxGeometry(wide*.82,.12,.58),paint);rear.position.set(0,h+.46,long*.38);rear.rotation.x=-.12;g.add(rear)}
   if(shape==='suv'||suv){for(const sx of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.07,.08,long*.58),chrome);rail.position.set(sx*wide*.36,h+1.2,.02);g.add(rail)}}
   if(shape==='super'){const spoiler=new THREE.Mesh(new THREE.BoxGeometry(wide*1.02,.08,.25),black);spoiler.position.set(0,h+.78,long*.47);g.add(spoiler);const splitter=new THREE.Mesh(new THREE.BoxGeometry(wide*1.08,.08,.32),black);splitter.position.set(0,.28,-long*.53);g.add(splitter)}
   if(shape==='luxury'){for(const sx of [-1,1]){const trim=new THREE.Mesh(new THREE.BoxGeometry(.035,.045,long*.68),chrome);trim.position.set(sx*wide*.5,.72,.02);g.add(trim)}}
-  if(truck){const cargo=new THREE.Mesh(new THREE.BoxGeometry(1.58,1.05,1.55),mat(0x9b9a92,.85));cargo.position.set(0,1.42,.82);g.add(cargo);for(let z of [.12,.5, .88,1.25]){const seam=new THREE.Mesh(new THREE.BoxGeometry(1.6,.035,.035),chrome);seam.position.set(0,1.15,z);g.add(seam)}}
+  if(trailer){const chassis=new THREE.Mesh(new RoundedBoxGeometry(2.05,.34,6.2,4,.08),black);chassis.position.set(0,.62,.62);g.add(chassis);const cargo=new THREE.Mesh(new RoundedBoxGeometry(2.22,2.28,5.85,4,.10),mat(0xbfc2bf,.82));cargo.position.set(0,2.02,.78);cargo.castShadow=true;cargo.receiveShadow=true;g.add(cargo);const tractor=new THREE.Mesh(new RoundedBoxGeometry(1.95,1.72,1.78,5,.16),paint);tractor.position.set(0,1.35,-2.55);g.add(tractor);const cabGlass=new THREE.Mesh(new RoundedBoxGeometry(1.48,.78,.045,4,.04),glass);cabGlass.position.set(0,1.72,-3.46);cabGlass.rotation.x=-.12;g.add(cabGlass);for(const z of [-1.65,-.55,.55,1.65,2.75]){const seam=new THREE.Mesh(new THREE.BoxGeometry(2.23,.035,.035),chrome);seam.position.set(0,2.02,z);g.add(seam)}for(const z of [-1.95,-.85,.25,1.35,2.45]){const marker=new THREE.Mesh(new THREE.BoxGeometry(.04,.12,.08),mat(0xd8d6c8));for(const side of [-1,1]){marker.position.set(side*1.12,1.35,z);g.add(marker.clone())}}}
+  if(trike){const bed=new THREE.Mesh(new RoundedBoxGeometry(1.18,.72,1.2,4,.09),mat(0x8b6139,.9));bed.position.set(0,1.03,.72);g.add(bed);const frontScreen=new THREE.Mesh(new THREE.BoxGeometry(.8,.46,.035),glass);frontScreen.position.set(0,1.25,-.62);frontScreen.rotation.x=-.16;g.add(frontScreen);for(const side of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.055,.42,1.05),chrome);rail.position.set(side*.58,1.18,.72);g.add(rail)}}
   if(tuk){const canopy=new THREE.Mesh(new THREE.BoxGeometry(1.2,.14,1.35),mat(0x2b6e4a,.55));canopy.position.set(0,h+1.02,.05);g.add(canopy);const rear=new THREE.Mesh(new THREE.BoxGeometry(.92,.55,.08),mat(0xd6c6a4));rear.position.set(0,.95,.95);g.add(rear)}
   // Smooth body surfacing, wheel arches, panel lines and model-specific exterior details
   const archMat=paint;
@@ -449,7 +389,7 @@ function vehicle(id,colorOverride){
   if(shape==='sport'||shape==='super'){const sideSkirt=new THREE.Mesh(new THREE.BoxGeometry(.08,.12,long*.52),black);for(const side of [-1,1]){sideSkirt.position.set(side*wide*.51,.29,0);g.add(sideSkirt)}}
   if(shape==='luxury'){const badge=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.025,16),chrome);badge.rotation.x=Math.PI/2;badge.position.set(0,h+.73,-long*.52);g.add(badge)}
   const wheelZ=long*.32,wheelX=wide*.48;
-  const wheels=tuk?[[-.5,.62],[.5,.62],[0,-.72]]:[[-wheelX,-wheelZ],[wheelX,-wheelZ],[-wheelX,wheelZ],[wheelX,wheelZ]];
+  const wheels=tuk?[[-.5,.62],[.5,.62],[0,-.72]]:trike?[[-.56,.72],[.56,.72],[0,-.78]]:trailer?[[-wheelX,-long*.35],[wheelX,-long*.35],[-wheelX,long*.16],[wheelX,long*.16],[-wheelX,long*.31],[wheelX,long*.31]]:[[-wheelX,-wheelZ],[wheelX,-wheelZ],[-wheelX,wheelZ],[wheelX,wheelZ]];
   for(const [x,z] of wheels){const tire=new THREE.Mesh(new THREE.TorusGeometry(.235,.085,12,24),black);tire.rotation.y=Math.PI/2;tire.position.set(x,.34,z);tire.castShadow=true;g.add(tire);const tread=new THREE.Mesh(new THREE.CylinderGeometry(.245,.245,.13,24),black);tread.rotation.z=Math.PI/2;tread.position.set(x,.34,z);g.add(tread);const rim=new THREE.Mesh(new THREE.CylinderGeometry(.155,.155,.145,24),mat(0x9da5a8,.24,.88));rim.rotation.z=Math.PI/2;rim.position.set(x,.34,z);g.add(rim);const hub=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.16,16),chrome);hub.rotation.z=Math.PI/2;hub.position.set(x,.34,z);g.add(hub);for(let k=0;k<5;k++){const spoke=new THREE.Mesh(new THREE.BoxGeometry(.025,.025,.13),chrome);spoke.position.set(x+Math.sign(x)*.083,.34+Math.sin(k*Math.PI*2/5)*.105,z+Math.cos(k*Math.PI*2/5)*.105);spoke.rotation.x=k*Math.PI*2/5;g.add(spoke)}}
   for(const x of [-wide*.34,wide*.34]){const side=x<0?'left':'right';const head=new THREE.Mesh(new THREE.BoxGeometry(.28,.16,.06),lamp);head.position.set(x,.68,-long*.5-.025);g.add(head);const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.24,.17,.06),new THREE.MeshStandardMaterial({color:0x7b1512,emissive:0x180000,roughness:.35}));rearLight.position.set(x,.65,long*.5+.025);g.add(rearLight);brakeLights.push(rearLight);for(const z of [-long*.5-.065,long*.5+.065]){const indicator=new THREE.Mesh(new THREE.BoxGeometry(.17,.12,.045),new THREE.MeshStandardMaterial({color:0xffa126,emissive:0x160900,roughness:.3}));indicator.position.set(x,.68,z);g.add(indicator);indicators[side].push(indicator)}}
   const bumperF=new THREE.Mesh(new THREE.BoxGeometry(wide*1.04,.13,.16),chrome);bumperF.position.set(0,.32,-long*.51);g.add(bumperF);
