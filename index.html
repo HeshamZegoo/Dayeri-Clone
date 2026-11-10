@@ -393,7 +393,7 @@ function buildShowcase(){
 }
 function renderShowcaseCar(){
  if(!showcaseScene)return;
- if(showcaseCar){showcaseScene.remove(showcaseCar);showcaseCar.traverse(o=>{if(o.geometry)o.geometry.dispose()})}
+ if(showcaseCar)showcaseScene.remove(showcaseCar)
  const c=cars[showcaseIndex];showcaseCar=vehicle(showcaseIndex);showcaseCar.position.set(0,0,0);showcaseScene.add(showcaseCar);mountCarModel(showcaseCar,showcaseIndex);
  const typeName={car:'سيدان / هاتشباك',taxi:'تاكسي',van:'ميكروباص / فان',tuk:'توكتوك',truck:'نقل ثقيل',bike:'موتوسيكل',suv:'دفع رباعي'}[c.type]||'مركبة';
  $('#showcaseName').textContent=c.name;$('#showcaseType').textContent=typeName+' · عرض ثلاثي الأبعاد';
@@ -408,9 +408,9 @@ function renderShowcaseCar(){
 }
 function moveShowcase(delta){showcaseIndex=(showcaseIndex+delta+cars.length)%cars.length;renderShowcaseCar()}
 $('#showcaseList').addEventListener('click',e=>{const b=e.target.closest('[data-showcar]');if(!b)return;showcaseIndex=+b.dataset.showcar;renderShowcaseCar()});
-$('#showcasePrev').onclick=()=>moveShowcase(-1);$('#showcaseNext').onclick=()=>moveShowcase(1);
-$('#showcaseSelect').onclick=()=>{if(!save.owned.includes(showcaseIndex)){toast('العربية دي لسه مش في ملكيتك');return}carId=showcaseIndex;save.selected=showcaseIndex;persist();$('#carPreview').textContent=cars[carId].emoji;toast('تم اختيار '+cars[carId].name);screen(showcaseReturn)};
-$('#showcaseBuy').onclick=()=>{if(save.owned.includes(showcaseIndex)){garageRender();screen('garage');return}garageRender();screen('garage');const b=$('[data-gcar="'+showcaseIndex+'"]');if(b){b.scrollIntoView({behavior:'smooth',block:'center'});b.click()}};
+$('#showcasePrev').onclick=()=>moveShowcase(-1);$('#showcaseNext').onclick=()=>moveShowcase(1);$('#showcaseCanvas').addEventListener('pointerdown',e=>{showcasePointer=e.clientX;$('#showcaseCanvas').setPointerCapture(e.pointerId)});$('#showcaseCanvas').addEventListener('pointerup',e=>{if(showcasePointer===null)return;const dx=e.clientX-showcasePointer;showcasePointer=null;if(Math.abs(dx)>28&&showcaseCar)showcaseCar.rotation.y+=dx*.012});
+$('#showcaseSelect').onclick=()=>{if(!save.owned.includes(showcaseIndex)){toast('العربية دي لسه مش في ملكيتك');return}carId=showcaseIndex;save.selected=showcaseIndex;persist();$('#carPreview').textContent=cars[carId].emoji;toast('تم اختيار '+cars[carId].name);if(showcaseReturn==='garage')garageRender();screen(showcaseReturn)};
+$('#showcaseBuy').onclick=()=>{garageRender();screen('garage');const b=$('[data-gcar="'+showcaseIndex+'"]');if(b)b.scrollIntoView({behavior:'smooth',block:'center'})};
 $('#showcaseBack').onclick=()=>{if(showcaseReturn==='garage')garageRender();screen(showcaseReturn)};
 $('#showcaseOpen').onclick=()=>showcaseOpen('menu');$('#garageShowcase').onclick=()=>showcaseOpen('garage');
 function garageRender(){$('#wallet').textContent=save.cash.toLocaleString('en-US')+' ج';const hw=$('#homeWallet');if(hw)hw.textContent=save.cash.toLocaleString('en-US');$('#garageCars').innerHTML=cars.map((c,i)=>'<button class="carcard" data-gcar="'+i+'"><div class="emoji">'+c.emoji+'</div><b>'+c.name+'</b><small>'+(save.owned.includes(i)?(save.selected===i?'مختارة':'امتلكها'):c.price.toLocaleString('en-US')+' ج')+'</small></button>').join('');$$('[data-gcar]').forEach(b=>b.onclick=()=>{const i=+b.dataset.gcar,c=cars[i];if(!save.owned.includes(i)){if(save.cash<c.price){toast('الفكة مش مكفية');return}save.cash-=c.price;save.owned.push(i);toast('مبروك! العربية بقت بتاعتك')}save.selected=i;carId=i;persist();garageRender()});const lv=save.upgrades[save.selected]||{engine:0,brake:0,nitro:0,chassis:0},names={engine:['الموتور','سرعة وتسارع أعلى'],brake:['الفرامل والكاوتش','تحكم وثبات أحسن'],nitro:['النيتروس','دفعة أطول وخزان أكبر'],chassis:['الشاسيه','تحمّل خبطات أكتر']};$('#upgrades').innerHTML='<div class="label">شد العربية · '+cars[save.selected].name+'</div>'+Object.entries(names).map(([k,v])=>'<div class="upgrade"><div><b>'+v[0]+'</b><small>'+v[1]+'</small><small>المستوى '+(lv[k]||0)+'/10</small></div><button data-up="'+k+'">طوّر · '+(800+(lv[k]||0)*650)+' ج</button></div>').join('');$$('[data-up]').forEach(b=>b.onclick=()=>{const k=b.dataset.up,l=lv[k]||0,cost=800+l*650;if(l>=10||save.cash<cost){toast(l>=10?'أقصى مستوى':'محتاج فكة أكتر');return}save.cash-=cost;lv[k]=l+1;save.upgrades[save.selected]=lv;persist();garageRender()})}
