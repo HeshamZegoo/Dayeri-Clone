@@ -114,6 +114,20 @@ function makeFlyover(z){
  for(let x=-10;x<=10;x+=4){const lamp=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,.12),mat(0xffe4a4));lamp.position.set(x,7.1,2.8);g.add(lamp)}
  return addProp(g,z)
 }
+function makeExit(side,z,label){
+ const g=new THREE.Group(),asphaltExit=mat(0x303438,.98),railMat=mat(0x8b908d,.7),edgeMat=mat(0xe7dfc8,.8);
+ for(let i=0;i<6;i++){
+  const seg=new THREE.Mesh(new THREE.BoxGeometry(3.8,.12,7.2),asphaltExit);
+  seg.position.set(side*(8.6+i*1.42),.015,-i*5.2);seg.rotation.y=-side*.25;g.add(seg);
+  const rail=new THREE.Mesh(new THREE.BoxGeometry(.16,.7,7.1),railMat);
+  rail.position.set(side*(10.55+i*1.42),.38,-i*5.2);rail.rotation.y=-side*.25;g.add(rail);
+  if(i%2===0){const dash=new THREE.Mesh(new THREE.BoxGeometry(.13,.025,1.4),edgeMat);dash.position.set(side*(8.6+i*1.42),.09,-i*5.2);dash.rotation.y=-side*.25;g.add(dash)}
+ }
+ const pole=new THREE.Mesh(new THREE.BoxGeometry(.18,4.2,.18),concrete);pole.position.set(side*12.4,2.1,1.8);g.add(pole);
+ const cv=document.createElement('canvas');cv.width=640;cv.height=190;const cx=cv.getContext('2d');cx.fillStyle='#075638';cx.fillRect(0,0,640,190);cx.strokeStyle='#f3e8c8';cx.lineWidth=9;cx.strokeRect(8,8,624,174);cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.direction='rtl';cx.font='bold 58px Arial';cx.fillText('مخرج '+label,320,78);cx.font='bold 31px Arial';cx.fillStyle='#f4d58d';cx.fillText(side<0?'EXIT ←':'→ EXIT',320,143);
+ const board=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));board.position.set(side*12.4,4.35,1.75);board.rotation.y=side<0?0:Math.PI;g.add(board);
+ return addProp(g,z)
+}
 function makeFuelStop(x,z){
  const g=new THREE.Group(),roof=new THREE.Mesh(new THREE.BoxGeometry(9,.4,6),mat(0xd8d4c8));roof.position.y=4.1;g.add(roof);
  const fascia=new THREE.Mesh(new THREE.BoxGeometry(9,.65,.2),fuelRed);fascia.position.set(0,3.7,-2.95);g.add(fascia);
@@ -124,7 +138,7 @@ function makeFuelStop(x,z){
 }
 for(let i=0;i<12;i++){const side=i%2?1:-1;makePalm(side*(10.5+Math.random()*3),-i*34-18)}
 for(let i=0;i<10;i++){const side=i%2?1:-1;makeBlock(side*(19+Math.random()*9),-i*43-35,7+Math.random()*5,10+Math.random()*19,7,[0xb5a58e,0x9a978e,0xc4b9a6,0x898b86][i%4])}
-makeBillboard(10.5,-65,'القاهرة الجديدة','خليك في حارتك');makeBillboard(-10.5,-225,'المنيب · المعادي','مخرج بعد 500 متر');makeFlyover(-155);makeFuelStop(-16,-310);
+makeBillboard(10.5,-65,'القاهرة الجديدة','خليك في حارتك');makeBillboard(-10.5,-225,'المنيب · المعادي','مخرج بعد 500 متر');makeFlyover(-155);makeFuelStop(-16,-310);makeExit(-1,-78,'المنيب');makeExit(1,-172,'المعادي');makeExit(-1,-266,'القطامية');makeExit(1,-360,'السلام');
 function vehicle(id,colorOverride){
  const c=cars[id],g=new THREE.Group(),brakeLights=[],indicators={left:[],right:[]},color=colorOverride??c.color,type=c.type,paint=mat(color,.38,.24),black=mat(0x171b1d,.8),chrome=mat(0x92999a,.32,.72),lamp=mat(0xfff0c8,.22,.15),tail=mat(0xc51f19,.3);
  if(type==='bike'){
