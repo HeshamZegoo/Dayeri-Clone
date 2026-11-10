@@ -97,8 +97,10 @@ function makeRoadSurface(width,material,offset=0){
 }
 function updateRoadSurface(mesh){
  const z=mesh.position.z,w=mesh.userData.width,off=mesh.userData.offset,za=z-5,zb=z+5;
- const pos=new Float32Array([roadCurveX(za)+off-w/2,roadHeight(za)+.015,za,roadCurveX(za)+off+w/2,roadHeight(za)+.015,za,roadCurveX(zb)+off-w/2,roadHeight(zb)+.015,zb,roadCurveX(zb)+off+w/2,roadHeight(zb)+.015,zb]);
- mesh.geometry.dispose();mesh.geometry=new THREE.BufferGeometry();mesh.geometry.setAttribute('position',new THREE.BufferAttribute(pos,3));mesh.geometry.setIndex([0,2,1,1,2,3]);mesh.geometry.computeVertexNormals();
+ const pos=new Float32Array([roadCurveX(za)+off-w/2,roadHeight(za)+.015,-5,roadCurveX(za)+off+w/2,roadHeight(za)+.015,-5,roadCurveX(zb)+off-w/2,roadHeight(zb)+.015,5,roadCurveX(zb)+off+w/2,roadHeight(zb)+.015,5]);
+ const geo=mesh.geometry,attr=geo.getAttribute('position');
+ if(attr){attr.array.set(pos);attr.needsUpdate=true}else{geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setIndex([0,2,1,1,2,3])}
+ geo.computeVertexNormals();
 }
 makeRoadSurface(18,roadMat);
 const soil=new THREE.Mesh(new THREE.PlaneGeometry(500,500),soilMat);soil.rotation.x=-Math.PI/2;soil.position.set(0,-.22,-120);scene.add(soil);
@@ -171,7 +173,7 @@ curvedRamp();
 function elevatedOverpass(){
  const g=new THREE.Group(),deckMat=mat(0x777c7a,.82,.22),supportMat=mat(0x777a76,.95),parapetMat=mat(0x969a94,.82);
  const deck=new THREE.Mesh(new THREE.BoxGeometry(31,.72,8.5),deckMat);deck.position.set(0,5.55,0);deck.castShadow=true;deck.receiveShadow=true;g.add(deck);
- for(const side of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(31,.82,.28),parapetMat);rail.position.set(0,6.25,side*4.12);g.add(rail);const pier=new THREE.Mesh(new THREE.BoxGeometry(1.15,5.15,1.1),supportMat);pier.position.set(side*10.2,2.58,0);pier.castShadow=true;g.add(pier);const bearing=new THREE.Mesh(new THREE.BoxGeometry(2.2,.35,1.5),deckMat);bearing.position.set(side*10.2,5.05,0);g.add(bearing);const rampPts=[];for(let i=0;i<=18;i++){const t=i/18;rampPts.push({x:side*(10.5+13*t),y:.15+5.4*(1-t),z:0})}g.add(new THREE.Mesh(ribbonGeometry(rampPts,8.5),deckMat));const shoulderRail=new THREE.Mesh(new THREE.BoxGeometry(13,.16,.18),parapetMat);shoulderRail.position.set(side*17,3.0,side*4.12);g.add(shoulderRail)}
+ for(const side of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(31,.82,.28),parapetMat);rail.position.set(0,6.25,side*4.12);g.add(rail);const pier=new THREE.Mesh(new THREE.BoxGeometry(1.15,5.15,1.1),supportMat);pier.position.set(side*10.2,2.58,0);pier.castShadow=true;g.add(pier);const bearing=new THREE.Mesh(new THREE.BoxGeometry(2.2,.35,1.5),deckMat);bearing.position.set(side*10.2,5.05,0);g.add(bearing);const rampPts=[];for(let i=0;i<=42;i++){const t=i/42;rampPts.push({x:side*(10.5+42*t),y:.15+5.4*(1-t),z:0})}g.add(new THREE.Mesh(ribbonGeometry(rampPts,8.5),deckMat));for(const railSide of [-1,1]){const railPath=rampPts.map(p=>new THREE.Vector3(p.x,p.y+.62,p.z+railSide*4.12));g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(railPath),64,.09,8,false),parapetMat))}for(const t of [.25,.5,.75]){const x=side*(10.5+42*t),h=5.55-5.4*t,pierRamp=new THREE.Mesh(new THREE.BoxGeometry(.85,h,1),supportMat);pierRamp.position.set(x,h/2,0);g.add(pierRamp)}}
  g.position.z=-250;distantProps.push(g);
 }
 elevatedOverpass();
