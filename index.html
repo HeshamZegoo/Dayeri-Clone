@@ -123,7 +123,7 @@ for(let i=0;i<18;i++){
  const arm=new THREE.Mesh(new THREE.BoxGeometry(1.35,.09,.12),steel);arm.position.set(-side*.88,7.42,0);p.add(arm);
  const head=new THREE.Mesh(new THREE.BoxGeometry(.52,.16,.34),mat(0x353b3b,.4,.45));head.position.set(-side*1.35,7.34,0);p.add(head);
  const glow=new THREE.Mesh(new THREE.BoxGeometry(.38,.025,.22),new THREE.MeshBasicMaterial({color:0xffe5ad}));glow.position.set(-side*1.35,7.245,0);p.add(glow);
- p.position.set(side*10.7,0,z);scene.add(p);distantProps.push(p);
+ p.position.set(side*10.7,0,z);scene.add(p);roadDetailProps.push(p);
 }
 const distantProps=[];
 function roadSign(label,z){const cv=document.createElement('canvas');cv.width=640;cv.height=170;const cx=cv.getContext('2d');cx.fillStyle='#075638';cx.fillRect(0,0,640,170);cx.strokeStyle='#f3e8c8';cx.lineWidth=9;cx.strokeRect(8,8,624,154);cx.fillStyle='#fff';cx.font='bold 55px Cairo,Arial';cx.textAlign='center';cx.textBaseline='middle';cx.direction='rtl';cx.fillText(label,320,88);const tex=new THREE.CanvasTexture(cv);const board=new THREE.Mesh(new THREE.PlaneGeometry(4.6,1.22),new THREE.MeshBasicMaterial({map:tex}));board.position.set(-9.8,4.45,z);scene.add(board);distantProps.push(board);for(const x of [-11.7,-7.9]){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,4.4,8),mat(0x656b6c));pole.position.set(x,2.2,z);scene.add(pole);distantProps.push(pole)}}roadSign('نزلة المنيب ←',-38);roadSign('المعادي · القطامية',-118);roadSign('السلام · المرج →',-198);roadSign('المريوطية · الوراق',-278);for(let i=0;i<4;i++){
