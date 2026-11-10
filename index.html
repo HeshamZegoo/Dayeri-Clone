@@ -152,6 +152,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script><script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let old={};try{old=JSON.parse(localStorage.getItem('dayeriSave')||'{}')||{}}catch(e){localStorage.removeItem('dayeriSave')}
 const save={cash:Number.isFinite(old.cash)?Math.max(0,old.cash):1800,owned:Array.from({length:23},(_,i)=>i),selected:Number.isInteger(old.selected)&&old.selected>=0&&old.selected<23?old.selected:0,upgrades:old.upgrades&&typeof old.upgrades==='object'?old.upgrades:{},best:Number.isFinite(old.best)?old.best:0,level:Number.isFinite(old.level)?old.level:1,timeStage:Number.isInteger(old.timeStage)?Math.max(1,Math.min(50,old.timeStage)):1,lastDaily:typeof old.lastDaily==='string'?old.lastDaily:''};
@@ -347,7 +348,36 @@ for(let i=0;i<12;i++){const side=i%2?1:-1;makePalm(side*(10.5+Math.random()*3),-
 for(let i=0;i<10;i++){const side=i%2?1:-1;makeBlock(side*(19+Math.random()*9),-i*43-35,7+Math.random()*5,10+Math.random()*19,7,[0xb5a58e,0x9a978e,0xc4b9a6,0x898b86][i%4])}
 makeBillboard(10.5,-65,'القاهرة الجديدة','خليك في حارتك');makeBillboard(-10.5,-225,'المنيب · المعادي','مخرج بعد 500 متر');makeFlyover(-155);makeFuelStop(-16,-310);makeExit(-1,-78,'المنيب');makeExit(1,-172,'المعادي');makeExit(-1,-266,'القطامية');makeExit(1,-360,'السلام');makeTollPlaza(-335);
 
-function mountCarModel(group){return group}
+const carModelLoader=new GLTFLoader();
+const carModelUrls={
+ sedan:'https://files.innerscene.com/library/sedan-car-42109739/75c64c1b3c8b03734314/sedan-original.glb',
+ suv:'https://files.innerscene.com/library/suv-dc972cab/fe9e6d452331cda7d3f7/suv-original.glb'
+};
+const carModelPromises={};
+function loadRealCarModel(kind){
+ if(!carModelPromises[kind])carModelPromises[kind]=new Promise((resolve,reject)=>carModelLoader.load(carModelUrls[kind],g=>resolve(g.scene),undefined,reject));
+ return carModelPromises[kind];
+}
+function mountCarModel(group,id){
+ const c=cars[id],kind=(c.type==='suv')?'suv':(['car','taxi'].includes(c.type)&&!['super'].includes(c.shape))?'sedan':null;
+ if(!kind)return group;
+ loadRealCarModel(kind).then(source=>{
+  if(!group.parent&&!group.userData.isPlayerVehicle)return;
+  const model=source.clone(true),box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+  if(!size.x||!size.y||!size.z)return;
+  // Normalize the real-scale CC0 vehicle to the game's meter-based traffic dimensions.
+  const targetLength=kind==='suv'?3.75:3.35,targetWidth=kind==='suv'?1.82:1.55,targetHeight=kind==='suv'?1.48:1.30;
+  const scale=Math.min(targetLength/Math.max(size.x,size.z),targetWidth/Math.min(size.x,size.z),targetHeight/size.y);
+  model.scale.setScalar(scale);
+  model.position.set(-center.x*scale,.03-center.y*scale,-center.z*scale);
+  model.rotation.y=Math.PI;
+  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else if(o.material)o.material=o.material.clone()}});
+  while(group.children.length)group.remove(group.children[0]);
+  group.add(model);
+  group.userData.realModelLoaded=true;
+ }).catch(err=>console.warn('Real CC0 vehicle model unavailable; procedural fallback kept:',kind,err));
+ return group;
+}
 
 function vehicle(id,colorOverride){
  const c=cars[id],g=new THREE.Group(),brakeLights=[],indicators={left:[],right:[]},color=colorOverride??c.color,type=c.type,paint=mat(color,.38,.24),black=mat(0x171b1d,.8),chrome=mat(0x92999a,.32,.72),lamp=mat(0xfff0c8,.22,.15),tail=mat(0xc51f19,.3);
