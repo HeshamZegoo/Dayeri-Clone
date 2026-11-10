@@ -125,7 +125,7 @@ function makeExit(side,z,label){
  }
  const pole=new THREE.Mesh(new THREE.BoxGeometry(.18,4.2,.18),concrete);pole.position.set(side*12.4,2.1,1.8);g.add(pole);
  const cv=document.createElement('canvas');cv.width=640;cv.height=190;const cx=cv.getContext('2d');cx.fillStyle='#075638';cx.fillRect(0,0,640,190);cx.strokeStyle='#f3e8c8';cx.lineWidth=9;cx.strokeRect(8,8,624,174);cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.direction='rtl';cx.font='bold 58px Arial';cx.fillText('مخرج '+label,320,78);cx.font='bold 31px Arial';cx.fillStyle='#f4d58d';cx.fillText(side<0?'EXIT ←':'→ EXIT',320,143);
- const board=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));board.position.set(side*12.4,4.35,1.75);board.rotation.y=side<0?0:Math.PI;g.add(board);
+ const board=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));board.position.set(side*12.4,4.35,1.75);g.add(board);
  return addProp(g,z)
 }
 function makeFuelStop(x,z){
