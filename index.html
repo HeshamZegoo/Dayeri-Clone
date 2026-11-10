@@ -141,6 +141,15 @@ function makeExit(side,z,label){
  const board=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));board.position.set(side*12.4,4.35,1.75);g.add(board);
  g.userData.routeExit=true;return addProp(g,z)
 }
+function makeTollPlaza(z){
+ const g=new THREE.Group(),booth=mat(0xd8d3c5,.9),roof=mat(0x315b50,.7),barrier=mat(0xe8e4d7,.55),red=mat(0xc43b32,.5);
+ const canopy=new THREE.Mesh(new THREE.BoxGeometry(16,.42,4.4),roof);canopy.position.set(0,5.2,0);g.add(canopy);
+ const fascia=new THREE.Mesh(new THREE.BoxGeometry(16,.75,.22),mat(0x174b3b));fascia.position.set(0,4.72,-2.12);g.add(fascia);
+ for(let i=0;i<4;i++){const x=-5.7+i*3.8,b=new THREE.Mesh(new THREE.BoxGeometry(2.1,2.25,2.25),booth);b.position.set(x,1.15,-.2);g.add(b);const win=new THREE.Mesh(new THREE.BoxGeometry(1.55,.8,.045),glass);win.position.set(x,1.65,-1.35);g.add(win);const arm=new THREE.Mesh(new THREE.BoxGeometry(2.5,.1,.13),barrier);arm.position.set(x+1.35,1.35,1.35);g.add(arm);for(let k=0;k<5;k++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.22,.105,.15),red);stripe.position.set(x+.25+k*.42,1.35,1.35);g.add(stripe)}}
+ for(const x of [-7.7,7.7]){const p=new THREE.Mesh(new THREE.BoxGeometry(.3,5.2,.3),concrete);p.position.set(x,2.6,0);g.add(p)}
+ const cv=document.createElement('canvas');cv.width=600;cv.height=150;const c=cv.getContext('2d');c.fillStyle='#075638';c.fillRect(0,0,600,150);c.fillStyle='#fff';c.font='bold 58px Arial';c.textAlign='center';c.textBaseline='middle';c.direction='rtl';c.fillText('بوابات الطريق',300,76);const board=new THREE.Mesh(new THREE.PlaneGeometry(5.5,1.35),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));board.position.set(0,4.72,-2.25);g.add(board);
+ return addProp(g,z)
+}
 function makeFuelStop(x,z){
  const g=new THREE.Group(),roof=new THREE.Mesh(new THREE.BoxGeometry(9,.4,6),mat(0xd8d4c8));roof.position.y=4.1;g.add(roof);
  const fascia=new THREE.Mesh(new THREE.BoxGeometry(9,.65,.2),fuelRed);fascia.position.set(0,3.7,-2.95);g.add(fascia);
@@ -151,7 +160,7 @@ function makeFuelStop(x,z){
 }
 for(let i=0;i<12;i++){const side=i%2?1:-1;makePalm(side*(10.5+Math.random()*3),-i*34-18)}
 for(let i=0;i<10;i++){const side=i%2?1:-1;makeBlock(side*(19+Math.random()*9),-i*43-35,7+Math.random()*5,10+Math.random()*19,7,[0xb5a58e,0x9a978e,0xc4b9a6,0x898b86][i%4])}
-makeBillboard(10.5,-65,'القاهرة الجديدة','خليك في حارتك');makeBillboard(-10.5,-225,'المنيب · المعادي','مخرج بعد 500 متر');makeFlyover(-155);makeFuelStop(-16,-310);makeExit(-1,-78,'المنيب');makeExit(1,-172,'المعادي');makeExit(-1,-266,'القطامية');makeExit(1,-360,'السلام');
+makeBillboard(10.5,-65,'القاهرة الجديدة','خليك في حارتك');makeBillboard(-10.5,-225,'المنيب · المعادي','مخرج بعد 500 متر');makeFlyover(-155);makeFuelStop(-16,-310);makeExit(-1,-78,'المنيب');makeExit(1,-172,'المعادي');makeExit(-1,-266,'القطامية');makeExit(1,-360,'السلام');makeTollPlaza(-335);
 function vehicle(id,colorOverride){
  const c=cars[id],g=new THREE.Group(),brakeLights=[],indicators={left:[],right:[]},color=colorOverride??c.color,type=c.type,paint=mat(color,.38,.24),black=mat(0x171b1d,.8),chrome=mat(0x92999a,.32,.72),lamp=mat(0xfff0c8,.22,.15),tail=mat(0xc51f19,.3);
  if(type==='bike'){
@@ -191,7 +200,21 @@ function vehicle(id,colorOverride){
  }
  g.userData.brakeLights=brakeLights;g.userData.indicators=indicators;return g
 }
-function lighting(){const cfg={day:[0x9ebccc,0xdceeff,2.5],sunset:[0xd58e63,0xffbd87,2],dusk:[0x654f66,0xffa46f,1.25],night:[0x101a31,0x9ab2e0,.65],fog:[0xa7b2b2,0xd4dedb,1.25]}[timeId];scene.background=new THREE.Color(cfg[0]);scene.fog=new THREE.Fog(cfg[0],timeId==='fog'?18:55,timeId==='fog'?95:220);sun.color.setHex(cfg[1]);sun.intensity=cfg[2];const terrain={ring:0x998b70,ism:0x9a967c,shobra:0x7f8b78,middle:0xaaa18c}[roadId]||0x998b70;soilMat.color.setHex(timeId==='night'?0x41434a:timeId==='fog'?0x858b83:terrain);roadMat.color.setHex(roadId==='shobra'?0x383b36:roadId==='ism'?0x34383d:roadId==='middle'?0x30363a:0x303438);renderer.toneMappingExposure=timeId==='night'?.82:1.05}
+const roadThemeGroups={ism:new THREE.Group(),shobra:new THREE.Group(),middle:new THREE.Group()};
+Object.values(roadThemeGroups).forEach(g=>scene.add(g));
+for(let i=0;i<9;i++){
+ const z=-35-i*43;
+ for(const side of [-1,1]){
+  const dune=new THREE.Mesh(new THREE.SphereGeometry(1,14,9),mat(0xb59a6d,.98));dune.scale.set(18,2.4+Math.random()*2,25);dune.position.set(side*25,-.15,z);roadThemeGroups.ism.add(dune);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,7,7),mat(0x777b7c));pole.position.set(side*9.3,3.5,z);roadThemeGroups.ism.add(pole);const lamp=new THREE.Mesh(new THREE.BoxGeometry(.55,.12,.35),mat(0xffe0a0,.4));lamp.position.set(side*9.3,7,z);roadThemeGroups.ism.add(lamp);
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16,.24,2.6,7),mat(0x806044));trunk.position.set(side*(15+Math.random()*4),1.3,z);roadThemeGroups.shobra.add(trunk);
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),mat(0x477344,.95));crown.scale.set(1.5,1.65,1.5);crown.position.set(trunk.position.x,3.35,z);roadThemeGroups.shobra.add(crown);
+  const field=new THREE.Mesh(new THREE.BoxGeometry(8,.12,30),mat(i%2?0x71834c:0x8d9956,.98));field.position.set(side*25,-.12,z);roadThemeGroups.shobra.add(field);
+  const tower=new THREE.Mesh(new THREE.BoxGeometry(5,8+(i%3)*3,7),mat([0xb5a995,0x938f85,0xc1b49e][i%3],.96));tower.position.set(side*(18+(i%2)*5),4+(i%3)*1.5,z);roadThemeGroups.middle.add(tower);
+  for(let row=0;row<3;row++)for(let col=0;col<2;col++){const win=new THREE.Mesh(new THREE.BoxGeometry(.65,.8,.05),mat(0x354d59,.35));win.position.set(tower.position.x-1.25+col*2.5,2+row*2.2,z-3.54);roadThemeGroups.middle.add(win)}
+ }
+}
+function lighting(){const cfg={day:[0x9ebccc,0xdceeff,2.5],sunset:[0xd58e63,0xffbd87,2],dusk:[0x654f66,0xffa46f,1.25],night:[0x101a31,0x9ab2e0,.65],fog:[0xa7b2b2,0xd4dedb,1.25]}[timeId];scene.background=new THREE.Color(cfg[0]);scene.fog=new THREE.Fog(cfg[0],timeId==='fog'?18:55,timeId==='fog'?95:220);sun.color.setHex(cfg[1]);sun.intensity=cfg[2];Object.entries(roadThemeGroups).forEach(([key,g])=>g.visible=key===roadId);const terrain={ring:0x998b70,ism:0xb59a6d,shobra:0x71834c,middle:0xaaa18c}[roadId]||0x998b70;soilMat.color.setHex(timeId==='night'?0x41434a:timeId==='fog'?0x858b83:terrain);roadMat.color.setHex(roadId==='shobra'?0x383b36:roadId==='ism'?0x34383d:roadId==='middle'?0x30363a:0x303438);renderer.toneMappingExposure=timeId==='night'?.82:1.05}
 function garageRender(){$('#wallet').textContent=save.cash.toLocaleString('en-US')+' ج';const hw=$('#homeWallet');if(hw)hw.textContent=save.cash.toLocaleString('en-US');$('#garageCars').innerHTML=cars.map((c,i)=>'<button class="carcard" data-gcar="'+i+'"><div class="emoji">'+c.emoji+'</div><b>'+c.name+'</b><small>'+(save.owned.includes(i)?(save.selected===i?'مختارة':'امتلكها'):c.price.toLocaleString('en-US')+' ج')+'</small></button>').join('');$$('[data-gcar]').forEach(b=>b.onclick=()=>{const i=+b.dataset.gcar,c=cars[i];if(!save.owned.includes(i)){if(save.cash<c.price){toast('الفكة مش مكفية');return}save.cash-=c.price;save.owned.push(i);toast('مبروك! العربية بقت بتاعتك')}save.selected=i;carId=i;persist();garageRender()});const lv=save.upgrades[save.selected]||{engine:0,brake:0,nitro:0,chassis:0},names={engine:['الموتور','سرعة وتسارع أعلى'],brake:['الفرامل والكاوتش','تحكم وثبات أحسن'],nitro:['النيتروس','دفعة أطول وخزان أكبر'],chassis:['الشاسيه','تحمّل خبطات أكتر']};$('#upgrades').innerHTML='<div class="label">شد العربية · '+cars[save.selected].name+'</div>'+Object.entries(names).map(([k,v])=>'<div class="upgrade"><div><b>'+v[0]+'</b><small>'+v[1]+'</small><small>المستوى '+(lv[k]||0)+'/10</small></div><button data-up="'+k+'">طوّر · '+(800+(lv[k]||0)*650)+' ج</button></div>').join('');$$('[data-up]').forEach(b=>b.onclick=()=>{const k=b.dataset.up,l=lv[k]||0,cost=800+l*650;if(l>=10||save.cash<cost){toast(l>=10?'أقصى مستوى':'محتاج فكة أكتر');return}save.cash-=cost;lv[k]=l+1;save.upgrades[save.selected]=lv;persist();garageRender()})}
 $('#dailyReward').onclick=()=>{const d=new Date(),today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(save.lastDaily===today){toast('استلمت مكافأة النهارده بالفعل 🎁');return}save.lastDaily=today;save.cash+=300;persist();$('#homeWallet').textContent=save.cash.toLocaleString('en-US');toast('مكافأة يومية +300 جنيه 🪙')};$('#garageOpen').onclick=()=>{garageRender();screen('garage')};$('#garageBack').onclick=()=>{if(state&&state.paused){screen('pauseScreen');$('#hud').style.display='block'}else screen('menu')};$('#garageDrive').onclick=()=>{carId=save.selected;startGame()};$('#pauseGarage').onclick=()=>{garageRender();screen('garage')};$('#resultGarage').onclick=()=>{garageRender();screen('garage')};
 let last=performance.now(),raf=0,audioCtx=null,engineOsc=null,engineGain=null;function initAudio(){if(audioCtx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC();engineOsc=audioCtx.createOscillator();engineOsc.type='sawtooth';engineOsc.frequency.value=48;engineGain=audioCtx.createGain();engineGain.gain.value=.004;engineOsc.connect(engineGain).connect(audioCtx.destination);engineOsc.start()}
