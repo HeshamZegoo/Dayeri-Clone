@@ -1,25 +1,25 @@
-# Dayeri Clone — prototype
+# ع الدائري — Independent 3D driving game
 
-An independent browser-based 3D driving game inspired by the Cairo Ring Road setting and broad gameplay loop of the reference game. It does not use the original game's source code, models, textures, audio, or branding assets.
+An unofficial, independently authored browser game inspired by the Egyptian Ring Road driving premise. All source code, procedural 3D vehicles, scenery and UI are original; this project does not use the reference game's proprietary source, models, textures, audio or artwork.
 
 ## Run locally
-Open `index.html` in a modern browser with internet access (Three.js is loaded from jsDelivr). For best results use a local static server:
-
 ```bash
 python -m http.server 8080
 ```
-
-Then visit http://localhost:8080.
+Open http://localhost:8080. Three.js is loaded from jsDelivr.
 
 ## Controls
-- Desktop: Arrow keys or A/D to change lanes; W/Up to accelerate; S/Down to brake; Space/Esc to pause.
-- Mobile: on-screen left/right, accelerator and brake buttons; swipe left/right on the scene to change lanes.
+- Desktop: Arrow keys / A-D to change lanes, Up/W to accelerate, Down/S to brake, Space/Esc to pause.
+- Mobile: on-screen lane, accelerator, brake, horn and nitro buttons; swipe left/right to change lanes.
 
-## Current prototype
-- Procedural 3D road, roadside buildings, barriers, lane markings and traffic vehicles.
-- Selectable player vehicle, traffic density and time of day.
-- Speed, distance, collision and best-distance tracking (local browser storage).
-- Responsive touch controls.
+## Included
+- Procedural 3D highway, roadside buildings, barriers, lane markings and lights.
+- Six vehicle classes, traffic density, four route themes and five lighting presets.
+- Shift, free-drive, time-trial and flight-inspired arcade modes.
+- Coins, objectives, radar speed checks, vehicle condition, nitro and collisions.
+- Garage with unlockable vehicles and per-vehicle engine, brake, nitro and chassis upgrades.
+- Local save for wallet, vehicles, upgrades, level and best distance.
+- Responsive Arabic UI and touch controls.
 
-## Roadmap
-Improve handling/physics, add more authentic Cairo road scenery and vehicle variety, garage upgrades, radio/audio, missions, and mobile performance testing.
+## Deployment
+GitHub Actions deploys the static site to Pages when the repository Pages source is set to GitHub Actions.
