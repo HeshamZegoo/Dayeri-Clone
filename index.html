@@ -371,7 +371,7 @@ function mountCarModel(group,id){
   model.scale.setScalar(scale);
   model.position.set(-center.x*scale,.03-center.y*scale,-center.z*scale);
   model.rotation.y=Math.PI;
-  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else if(o.material)o.material=o.material.clone()}});
+  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(Array.isArray(o.material))o.material=o.material.map(m=>{const q=m.clone();if(/paint|body|coach|exterior/i.test(q.name||'' )&&q.color)q.color.setHex(c.color);return q});else if(o.material){o.material=o.material.clone();if(/paint|body|coach|exterior/i.test(o.material.name||'')&&o.material.color)o.material.color.setHex(c.color)}}});
   while(group.children.length)group.remove(group.children[0]);
   group.add(model);
   group.userData.realModelLoaded=true;
