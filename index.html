@@ -49,7 +49,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let old={};try{old=JSON.parse(localStorage.getItem('dayeriSave')||'{}')||{}}catch(e){localStorage.removeItem('dayeriSave')}
-const save={cash:Number.isFinite(old.cash)?Math.max(0,old.cash):1800,owned:Array.isArray(old.owned)&&old.owned.some(i=>Number.isInteger(i)&&i>=0&&i<12)?old.owned.filter(i=>Number.isInteger(i)&&i>=0&&i<12):[0,2],selected:Number.isInteger(old.selected)&&old.selected>=0&&old.selected<12?old.selected:0,upgrades:old.upgrades&&typeof old.upgrades==='object'?old.upgrades:{},best:Number.isFinite(old.best)?old.best:0,level:Number.isFinite(old.level)?old.level:1,timeStage:Number.isInteger(old.timeStage)?Math.max(1,Math.min(50,old.timeStage)):1,lastDaily:typeof old.lastDaily==='string'?old.lastDaily:''};
+const save={cash:Number.isFinite(old.cash)?Math.max(0,old.cash):1800,owned:Array.isArray(old.owned)&&old.owned.some(i=>Number.isInteger(i)&&i>=0&&i<23)?old.owned.filter(i=>Number.isInteger(i)&&i>=0&&i<23):[0,2],selected:Number.isInteger(old.selected)&&old.selected>=0&&old.selected<23?old.selected:0,upgrades:old.upgrades&&typeof old.upgrades==='object'?old.upgrades:{},best:Number.isFinite(old.best)?old.best:0,level:Number.isFinite(old.level)?old.level:1,timeStage:Number.isInteger(old.timeStage)?Math.max(1,Math.min(50,old.timeStage)):1,lastDaily:typeof old.lastDaily==='string'?old.lastDaily:''};
 const cars=[
 {name:'صني',emoji:'🚙',type:'car',price:0,max:175,acc:1,handling:1,armor:1,width:1.45,color:0xe5e4df},
 {name:'تاكسي',emoji:'🚕',type:'taxi',price:2400,max:165,acc:.95,handling:.92,armor:1.2,width:1.5,color:0xd5b52e},
@@ -62,7 +62,18 @@ const cars=[
 {name:'بيجو',emoji:'🚙',type:'van',price:11000,max:150,acc:.9,handling:.88,armor:1.65,width:1.65,color:0x9b9b91},
 {name:'لاند كروزر',emoji:'🚙',type:'suv',price:26000,max:205,acc:1.2,handling:.94,armor:2.2,width:1.8,color:0xe1dfd1},
 {name:'باترول',emoji:'🚙',type:'suv',price:32000,max:215,acc:1.25,handling:.9,armor:2.4,width:1.85,color:0x252b2b},
-{name:'تريلا',emoji:'🚛',type:'truck',price:18000,max:120,acc:.7,handling:.62,armor:3,width:1.9,color:0x9a3b2e}
+{name:'تريلا',emoji:'🚛',type:'truck',price:18000,max:120,acc:.7,handling:.62,armor:3,width:1.9,color:0x9a3b2e},
+{name:'BYD',emoji:'🚘',type:'car',shape:'sedan',price:7000,max:185,acc:1.08,handling:1.04,armor:1,width:1.5,color:0x9ba6ad},
+{name:'كورولا',emoji:'🚗',type:'car',shape:'sedan',price:8000,max:188,acc:1.05,handling:1.1,armor:1.08,width:1.5,color:0xeeeeea},
+{name:'سبورتاج',emoji:'🚙',type:'suv',shape:'suv',price:12000,max:195,acc:1.12,handling:1.02,armor:1.8,width:1.82,color:0x343b40},
+{name:'إيبيزا',emoji:'🚗',type:'car',shape:'hatch',price:15000,max:198,acc:1.2,handling:1.28,armor:.95,width:1.42,color:0xb42e36},
+{name:'أكورد',emoji:'🚘',type:'car',shape:'luxury',price:7500,max:190,acc:1.1,handling:1.03,armor:1.15,width:1.56,color:0x262e38},
+{name:'إم جي',emoji:'🚗',type:'car',shape:'sport',price:8500,max:192,acc:1.14,handling:1.12,armor:1.05,width:1.52,color:0x8d2732},
+{name:'بنز',emoji:'🚙',type:'suv',shape:'luxury',price:60000,max:220,acc:1.18,handling:.98,armor:2,width:1.82,color:0x20252a},
+{name:'بي إم',emoji:'🚘',type:'car',shape:'sport',price:75000,max:235,acc:1.32,handling:1.2,armor:1.2,width:1.56,color:0x202a39},
+{name:'لامبو',emoji:'🏎️',type:'car',shape:'super',price:150000,max:285,acc:1.55,handling:1.35,armor:1.1,width:1.62,color:0xe2b52b},
+{name:'تاكسي لادا',emoji:'🚕',type:'taxi',shape:'classicTaxi',price:25000,max:155,acc:.86,handling:.82,armor:1.45,width:1.52,color:0xe6dfc8},
+{name:'تاكسي إلنترا',emoji:'🚕',type:'taxi',shape:'modernTaxi',price:28000,max:185,acc:1.1,handling:1.08,armor:1.05,width:1.54,color:0xe4c32c}
 ];
 const roads={ring:{name:'الطريق الدائري',limit:90,finish:5.5,stops:[['manib','المنيب',5.5],['maadi','المعادي',12],['qatamiya','القطامية',19],['salam','السلام',27],['marj','المرج',35],['maryoutiya','المريوطية',44],['warraq','الوراق',53],['full','لفة كاملة',89]]},ism:{name:'مصر–الإسماعيلية',limit:120,finish:6.5,stops:[['obour','العبور',6.5],['sherouk','الشروق',13],['badr','بدر',20],['ismailia','اتجاه الإسماعيلية',30]]},shobra:{name:'شبرا–بنها الحر',limit:120,finish:4,stops:[['shobra','شبرا',4],['qalyub','قليوب',9],['qanater','القناطر',15],['banha','بنها',22]]},middle:{name:'الدائري الأوسطي',limit:120,finish:7,stops:[['fifth','التجمع',7],['ain','العين السخنة',15],['capital','العاصمة الإدارية',24],['helwan','حلوان',33]]}};
 let mode='shift',carId=0,roadId='ring',directionId='cw',timeId='day',trafficLevel=1,cameraMode='normal',selectedExitId='manib',routeGoal=5.5,state=null,input={};
@@ -151,10 +162,10 @@ function vehicle(id,colorOverride){
   for(const z of [-.68,.68]){const wh=new THREE.Mesh(new THREE.TorusGeometry(.34,.105,9,18),black);wh.rotation.y=Math.PI/2;wh.position.set(0,.38,z);g.add(wh);const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.13,12),chrome);hub.rotation.z=Math.PI/2;hub.position.set(0,.38,z);g.add(hub)}
   const bar=new THREE.Mesh(new THREE.BoxGeometry(.9,.08,.09),chrome);bar.position.set(0,1.42,-.63);g.add(bar);
  }else{
-  const tuk=type==='tuk',van=type==='van',truck=type==='truck',suv=type==='suv',wide=tuk?1.08:van?1.72:truck?1.9:suv?1.82:1.55,long=van?3.75:truck?4.5:tuk?2.25:suv?3.75:2.95,h=van?1.05:tuk?.82:suv?.92:.72;
+  const tuk=type==='tuk',van=type==='van',truck=type==='truck',suv=type==='suv',shape=c.shape||'standard',wide=tuk?1.08:van?1.72:truck?1.9:suv?1.82:shape==='super'?1.62:shape==='hatch'?1.42:1.55,long=van?3.75:truck?4.5:tuk?2.25:suv?3.75:shape==='super'?3.35:shape==='hatch'?2.55:shape==='luxury'?3.45:3.05,h=van?1.05:tuk?.82:suv?.92:shape==='super'?.58:shape==='hatch'?.68:.72;
   const lower=new THREE.Mesh(new THREE.BoxGeometry(wide,h,long),paint);lower.position.y=h/2+.28;lower.castShadow=true;g.add(lower);
   const hood=new THREE.Mesh(new THREE.BoxGeometry(wide*.94,.22,long*.27),paint);hood.position.set(0,h+.28,-long*.34);g.add(hood);
-  const cabW=wide*.88,cabH=van?1.02:tuk?.8:suv?1.08:.72,cabL=van?1.65:tuk?1.15:suv?1.75:1.38;
+  const cabW=wide*.88,cabH=van?1.02:tuk?.8:suv?1.08:shape==='super'?.56:shape==='hatch'?.69:shape==='luxury'?.78:.72,cabL=van?1.65:tuk?1.15:suv?1.75:shape==='hatch'?1.18:shape==='super'?1.32:1.42;
   const cab=new THREE.Mesh(new THREE.BoxGeometry(cabW,cabH,cabL),paint);cab.position.set(0,h+.55,-.05);cab.castShadow=true;g.add(cab);
   const windshield=new THREE.Mesh(new THREE.BoxGeometry(cabW*.88,cabH*.64,.035),glass);windshield.position.set(0,h+.65,-cabL*.5-.02);g.add(windshield);
   const rearGlass=new THREE.Mesh(new THREE.BoxGeometry(cabW*.82,cabH*.48,.035),glass);rearGlass.position.set(0,h+.64,cabL*.5+.02);g.add(rearGlass);
@@ -162,7 +173,11 @@ function vehicle(id,colorOverride){
    const sideGlass=new THREE.Mesh(new THREE.BoxGeometry(.035,cabH*.53,cabL*.65),glass);sideGlass.position.set(side*(cabW*.5+.008),h+.65,-.04);g.add(sideGlass);
    const mirror=new THREE.Mesh(new THREE.BoxGeometry(.18,.12,.24),black);mirror.position.set(side*(wide*.55),h+.75,-.52);g.add(mirror);
   }
-  if(van||suv){const roof=new THREE.Mesh(new THREE.BoxGeometry(wide*.94,.12,long*.68),paint);roof.position.set(0,h+1.1,.05);g.add(roof)}
+  if(van||suv||shape==='luxury'||shape==='sport'||shape==='super'){const roof=new THREE.Mesh(new THREE.BoxGeometry(wide*.94,.12,long*.68),paint);roof.position.set(0,h+(shape==='super'?.62:1.1),.05);g.add(roof)}
+  if(shape==='hatch'){const rear=new THREE.Mesh(new THREE.BoxGeometry(wide*.82,.12,.58),paint);rear.position.set(0,h+.46,long*.38);rear.rotation.x=-.12;g.add(rear)}
+  if(shape==='suv'||suv){for(const sx of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.07,.08,long*.58),chrome);rail.position.set(sx*wide*.36,h+1.2,.02);g.add(rail)}}
+  if(shape==='super'){const spoiler=new THREE.Mesh(new THREE.BoxGeometry(wide*1.02,.08,.25),black);spoiler.position.set(0,h+.78,long*.47);g.add(spoiler);const splitter=new THREE.Mesh(new THREE.BoxGeometry(wide*1.08,.08,.32),black);splitter.position.set(0,.28,-long*.53);g.add(splitter)}
+  if(shape==='luxury'){for(const sx of [-1,1]){const trim=new THREE.Mesh(new THREE.BoxGeometry(.035,.045,long*.68),chrome);trim.position.set(sx*wide*.5,.72,.02);g.add(trim)}}
   if(truck){const cargo=new THREE.Mesh(new THREE.BoxGeometry(1.58,1.05,1.55),mat(0x9b9a92,.85));cargo.position.set(0,1.42,.82);g.add(cargo);for(let z of [.12,.5, .88,1.25]){const seam=new THREE.Mesh(new THREE.BoxGeometry(1.6,.035,.035),chrome);seam.position.set(0,1.15,z);g.add(seam)}}
   if(tuk){const canopy=new THREE.Mesh(new THREE.BoxGeometry(1.2,.14,1.35),mat(0x2b6e4a,.55));canopy.position.set(0,h+1.02,.05);g.add(canopy);const rear=new THREE.Mesh(new THREE.BoxGeometry(.92,.55,.08),mat(0xd6c6a4));rear.position.set(0,.95,.95);g.add(rear)}
   const wheelZ=long*.32,wheelX=wide*.48;
@@ -172,7 +187,7 @@ function vehicle(id,colorOverride){
   const bumperF=new THREE.Mesh(new THREE.BoxGeometry(wide*1.04,.13,.16),chrome);bumperF.position.set(0,.32,-long*.51);g.add(bumperF);
   const bumperR=new THREE.Mesh(new THREE.BoxGeometry(wide*1.04,.13,.16),chrome);bumperR.position.set(0,.32,long*.51);g.add(bumperR);
   const grille=new THREE.Mesh(new THREE.BoxGeometry(.48,.18,.035),black);grille.position.set(0,.55,-long*.51-.02);g.add(grille);
-  if(type==='taxi'){const cap=new THREE.Mesh(new THREE.BoxGeometry(.62,.17,.35),mat(0xf5f1e4));cap.position.set(0,h+1.12,-.1);g.add(cap);const stripe=new THREE.Mesh(new THREE.BoxGeometry(wide+.015,.12,long*.72),mat(0x252525));stripe.position.set(0,.75,0);g.add(stripe)}
+  if(type==='taxi'){const cap=new THREE.Mesh(new THREE.BoxGeometry(shape==='classicTaxi'?.78:.62,.17,.35),mat(0xf5f1e4));cap.position.set(0,h+1.12,-.1);g.add(cap);const stripe=new THREE.Mesh(new THREE.BoxGeometry(wide+.015,shape==='classicTaxi'?.22:.12,long*.72),mat(0x252525));stripe.position.set(0,.75,0);g.add(stripe);if(shape==='classicTaxi'){for(const sx of [-1,1])for(let z=-long*.3;z<long*.35;z+=.48){const checker=new THREE.Mesh(new THREE.BoxGeometry(.035,.18,.28),black);checker.position.set(sx*(wide*.505),.75,z);g.add(checker)}}}
  }
  g.userData.brakeLights=brakeLights;g.userData.indicators=indicators;return g
 }
