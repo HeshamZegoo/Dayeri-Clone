@@ -170,12 +170,14 @@ const carModelUrls={
  hatch:'https://grab3d.com/dl/1990s-hatchback/1990s-hatchback.glb',
  suv:'https://grab3d.com/dl/1990s-off-roader/1990s-off-roader.glb',
  taxi:'https://grab3d.com/dl/1990s-taxi/1990s-taxi.glb',
+ minivan:'https://grab3d.com/dl/1990s-minivan/1990s-minivan.glb',
  super:'https://files.innerscene.com/library/generic-mid-engine-supercar-73f252c5/b41b620d8a8890b1b70a/generic-mid-engine-supercar.glb'
 };
 function carModelKey(id){
  const c=cars[id],shape=c.shape||'';
  if(c.type==='taxi'||shape==='classicTaxi'||shape==='modernTaxi')return 'taxi';
  if(c.type==='suv')return 'suv';
+ if(c.type==='van')return 'minivan';
  if(shape==='hatch')return 'hatch';
  if(shape==='super'||shape==='sport')return 'super';
  if(c.type==='car')return 'sedan';
@@ -188,7 +190,7 @@ function prepareCarModel(key){
  });
  return carModelPromises[key];
 }
-Object.keys(carModelUrls).forEach(prepareCarModel);
+
 function mountCarModel(group,id,colorOverride){
  const key=carModelKey(id);if(!key||group.userData.assetApplied)return;
  const ready=readyCarModels[key];
@@ -200,8 +202,8 @@ function mountCarModel(group,id,colorOverride){
  }
  const model=ready.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
  if(!size.x||!size.z)return;
- const targetDepth=key==='suv'?3.75:key==='super'?3.45:key==='hatch'?3.15:3.35;
- const targetWidth=key==='suv'?1.9:key==='super'?1.72:1.68;
+ const targetDepth=key==='suv'?3.75:key==='super'?3.45:key==='minivan'?3.55:key==='hatch'?3.15:3.35;
+ const targetWidth=key==='suv'?1.9:key==='super'?1.72:key==='minivan'?1.78:1.68;
  const scale=Math.min(targetDepth/size.z,targetWidth/size.x);
  model.scale.setScalar(scale);
  model.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
