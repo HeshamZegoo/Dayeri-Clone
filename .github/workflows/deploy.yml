@@ -1,4 +1,4 @@
-name: Deploy game to GitHub Pages
+name: Validate and deploy game to GitHub Pages
 
 on:
   push:
@@ -15,7 +15,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate game module syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text(encoding="utf-8")
+          match = re.search(r'<script type="module">([\\s\\S]*?)</script>', html)
+          if not match:
+              raise SystemExit("Could not find the game module in index.html")
+          Path("/tmp/game.mjs").write_text(match.group(1), encoding="utf-8")
+          PY
+          node --check /tmp/game.mjs
+      - name: Validate PWA manifest
+        run: python3 -m json.tool manifest.webmanifest > /dev/null
+
   deploy:
+    needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
